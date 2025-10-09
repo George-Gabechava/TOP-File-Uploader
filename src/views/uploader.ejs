@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/stylesheets/style.css" />
+  </head>
+  <body>
+    <div id="loggedInButtons">
+      <form id="logOutForm" action="/uploader/logOut" method="get">
+        <button type="submit">Log Out</button>
+      </form>
+    </div>
+  </body>
+
+  <!-- Footer -->
+  <%- include('footer'); %>
+</html>

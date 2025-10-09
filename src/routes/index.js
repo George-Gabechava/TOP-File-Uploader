@@ -4,6 +4,11 @@ const controller = require("../controllers/indexController.js");
 
 /* GET home page. */
 router.get("/", function (req, res, next) {
+  // If user is already logged in, redirect to uploader
+  if (req.isAuthenticated()) {
+    return res.redirect("/uploader");
+  }
+
   res.render("index", {
     title: "Shmoogle Drive",
     user: req.user,
