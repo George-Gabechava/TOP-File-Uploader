@@ -8,12 +8,15 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@quixo3/prisma-session-store": "^3.1.13",
     "bcryptjs": "^3.0.2",
+    "cookie-parser": "^1.4.7",
     "dotenv": "^16.4.7",
     "ejs": "^3.1.10",
     "express": "^4.21.2",
     "express-session": "^1.18.2",
     "express-validator": "^7.2.1",
+    "morgan": "^1.10.1",
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
     "pg": "^8.13.1",
