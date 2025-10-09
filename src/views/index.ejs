@@ -22,9 +22,14 @@
     <div id="formsContainer">
       <form id="signupForm" action="/signup" method="post">
         <label for="username">Username</label>
-        <input type="text" id="username" name="username" required />
+        <input type="text" id="usernameSignup" name="usernameSignup" required />
         <label for="password">Password</label>
-        <input type="password" id="password" name="password" required />
+        <input
+          type="password"
+          id="passwordSignup"
+          name="passwordSignup"
+          required
+        />
         <label for="confirmPassword">Confirm Password</label>
         <input
           type="password"
@@ -34,14 +39,16 @@
         />
         <button type="submit">Sign Up</button>
       </form>
-      <form id="loginForm" action="/users/login" method="get">
-        <label for="usernameLogin">Username</label>
-        <input type="text" id="usernameLogin" name="usernameLogin" required />
-        <label for="passwordLogin">Password</label>
-        <input type="text" id="passwordLogin" name="passwordLogin" required />
+      <form id="loginForm" action="/login" method="post">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" required />
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required />
         <button type="submit">Log In</button>
       </form>
     </div>
     <% } %>
+    <!-- Footer -->
+    <%- include('footer'); %>
   </body>
 </html>

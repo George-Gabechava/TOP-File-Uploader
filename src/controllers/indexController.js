@@ -6,17 +6,17 @@ const prisma = new PrismaClient();
 
 // Signup Validation Middleware
 const validateSignup = [
-  body("username")
+  body("usernameSignup")
     .trim()
     .isLength({ min: 3 })
     .withMessage("Username must be at least 3 characters")
     .escape(),
-  body("password")
+  body("passwordSignup")
     .isLength({ min: 6 })
     .withMessage("Password must be at least 6 characters"),
   body("confirmPassword")
     .custom((value, { req }) => {
-      return value === req.body.password;
+      return value === req.body.passwordSignup;
     })
     .withMessage("Passwords do not match"),
 ];
@@ -34,11 +34,11 @@ async function postSignup(req, res, next) {
   }
 
   try {
-    const { username, password } = req.body;
+    const { usernameSignup, passwordSignup } = req.body;
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
-      where: { username: username },
+      where: { username: usernameSignup },
     });
 
     if (existingUser) {
@@ -49,11 +49,11 @@ async function postSignup(req, res, next) {
       });
     }
     // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(passwordSignup, 10);
     // Create user
     const newUser = await prisma.user.create({
       data: {
-        username: username,
+        username: usernameSignup,
         password: hashedPassword,
       },
     });
@@ -63,6 +63,7 @@ async function postSignup(req, res, next) {
     console.error("Error in sign-up:", error);
     res.render("index", {
       title: "Shmoogle Drive",
+      user: req.user,
       errors: [{ msg: "An error occurred during sign up" }],
     });
   }

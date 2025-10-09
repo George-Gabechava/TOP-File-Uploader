@@ -9,12 +9,8 @@ router.get("/", function (req, res, next) {
     user: req.user,
   });
 });
-
-// Sign Up router
+// Sign up router
 router.post("/signup", controller.validateSignup, controller.postSignup);
-
-// Log in router
-// code here
 
 //
 module.exports = router;

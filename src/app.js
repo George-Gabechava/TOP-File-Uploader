@@ -23,10 +23,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "../public")));
 
-app.use("/", indexRouter);
-app.use("/uploader", uploaderRouter);
-
-// prisma setup
+// Prisma setup
 const expressSession = require("express-session");
 const { PrismaSessionStore } = require("@quixo3/prisma-session-store");
 const { PrismaClient } = require("@prisma/client");
@@ -47,9 +44,69 @@ app.use(
   })
 );
 
-// Initialize Passport middleware
+// Passport middleware
 app.use(passport.initialize());
 app.use(passport.session());
+
+// Routes
+app.use("/", indexRouter);
+app.use("/uploader", uploaderRouter);
+
+// Passport Local Strategy
+const prisma = new PrismaClient();
+
+passport.use(
+  new LocalStrategy(async (username, password, done) => {
+    try {
+      const user = await prisma.user.findFirst({
+        where: { username: username },
+      });
+
+      if (!user) {
+        console.log("Login failed: User not found");
+        return done(null, false, { message: "Incorrect username" });
+      }
+
+      const match = await bcrypt.compare(password, user.password);
+
+      if (!match) {
+        console.log("Login failed: Incorrect password");
+        return done(null, false, { message: "Incorrect password" });
+      }
+
+      return done(null, user);
+    } catch (err) {
+      return done(err);
+    }
+  })
+);
+
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
+
+passport.deserializeUser(async (id, done) => {
+  try {
+    console.log("Deserializing user with ID:", id); // Debug log
+
+    const user = await prisma.user.findUnique({
+      where: { id: id },
+    });
+    done(null, user);
+  } catch (err) {
+    done(err);
+  }
+});
+
+// Login route
+app.post(
+  "/login",
+  passport.authenticate("local", {
+    successRedirect: "/uploader",
+    failureRedirect: "/",
+    failureMessage: true,
+  })
+);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
@@ -66,57 +123,6 @@ app.use(function (err, req, res, next) {
   res.status(err.status || 500);
   res.render("error");
 });
-
-// Passport Local Strategy
-const prisma = new PrismaClient();
-
-passport.use(
-  new LocalStrategy(async (username, password, done) => {
-    try {
-      const user = await prisma.user.findFirst({
-        where: { username: username },
-      });
-
-      if (!user) {
-        return done(null, false, { message: "Incorrect username" });
-      }
-      const match = await bcrypt.compare(password, user.password);
-
-      if (!match) {
-        // If passwords do not match
-        return done(null, false, { message: "Incorrect password" });
-      }
-      return done(null, user);
-    } catch (err) {
-      return done(err);
-    }
-  })
-);
-
-passport.serializeUser((user, done) => {
-  done(null, user.id);
-});
-
-passport.deserializeUser(async (id, done) => {
-  try {
-    const user = await prisma.user.findUnique({
-      where: { id: id },
-    });
-
-    done(null, user);
-  } catch (err) {
-    done(err);
-  }
-});
-
-app.post(
-  "/logIn",
-  passport.authenticate("local", {
-    successRedirect: "/",
-    failureRedirect: "/",
-    failureMessage: true,
-  })
-);
 
 // Start server
 if (require.main === module) {
