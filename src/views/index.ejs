@@ -2,10 +2,46 @@
 <html>
   <head>
     <title><%= title %></title>
-    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <link rel="stylesheet" href="/stylesheets/style.css" />
   </head>
   <body>
     <h1><%= title %></h1>
     <p>Welcome to <%= title %></p>
+
+    <!-- Display errors if any -->
+    <% if (typeof errors !== 'undefined' && errors.length > 0) { %>
+    <div class="errors">
+      <% errors.forEach(error => { %>
+      <div><%= error.msg %></div>
+      <% }) %>
+    </div>
+    <% } %>
+
+    <!-- If not logged in, show sign up & log in buttons-->
+    <% if (!user) { %>
+    <div id="formsContainer">
+      <form id="signupForm" action="/signup" method="post">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" required />
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required />
+        <label for="confirmPassword">Confirm Password</label>
+        <input
+          type="password"
+          id="confirmPassword"
+          name="confirmPassword"
+          required
+        />
+        <button type="submit">Sign Up</button>
+      </form>
+      <form id="loginForm" action="/users/login" method="get">
+        <label for="usernameLogin">Username</label>
+        <input type="text" id="usernameLogin" name="usernameLogin" required />
+        <label for="passwordLogin">Password</label>
+        <input type="text" id="passwordLogin" name="passwordLogin" required />
+        <button type="submit">Log In</button>
+      </form>
+    </div>
+    <% } %>
   </body>
 </html>

@@ -5,7 +5,7 @@ const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 
 const indexRouter = require("./routes/index");
-const usersRouter = require("./routes/users");
+const uploaderRouter = require("./routes/uploader");
 
 const app = express();
 
@@ -21,10 +21,10 @@ app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "../public")));
 
 app.use("/", indexRouter);
-app.use("/users", usersRouter);
+app.use("/uploader", uploaderRouter);
 
 // prisma setup
 const expressSession = require("express-session");
@@ -46,6 +46,11 @@ app.use(
     }),
   })
 );
+
+// Initialize Passport middleware
+app.use(passport.initialize());
+app.use(passport.session());
+
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   next(createError(404));
@@ -79,7 +84,6 @@ passport.use(
 
       if (!match) {
         // If passwords do not match
-
         return done(null, false, { message: "Incorrect password" });
       }
       return done(null, user);
@@ -95,10 +99,9 @@ passport.serializeUser((user, done) => {
 
 passport.deserializeUser(async (id, done) => {
   try {
-    const { rows } = await pool.query("SELECT * FROM users WHERE id = $1", [
-      id,
-    ]);
-    const user = rows[0];
+    const user = await prisma.user.findUnique({
+      where: { id: id },
+    });
 
     done(null, user);
   } catch (err) {

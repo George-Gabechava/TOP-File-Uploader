@@ -13,17 +13,17 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Session {
-  id        String   @id
-  sid       String   @unique
-  data      String   @db.Text
-  expiresAt DateTime
-}
-
 model User {
   id       String @id @default(uuid())
   username String @unique
   password String
 
   @@index([username])
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  sid       String   @unique
+  data      String   @db.Text
+  expiresAt DateTime
 }

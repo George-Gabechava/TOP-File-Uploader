@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "start": "node app.js",
+    "start": "node src/app.js",
     "build": "npm install ejs",
     "lint": "eslint ."
   },

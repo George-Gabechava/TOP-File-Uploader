@@ -1,8 +1,12 @@
 body {
-  padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  padding: 30px;
+  font: 14px "Times New Roman", Times, serif;
 }
 
-a {
-  color: #00B7FF;
+button,
+input[type="submit"] {
+  margin-bottom: 10px;
+  font-weight: bold;
+  padding: 5px;
+  width: 20vw;
 }
