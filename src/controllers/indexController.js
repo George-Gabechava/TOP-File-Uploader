@@ -69,7 +69,22 @@ async function postSignup(req, res, next) {
   }
 }
 
+// GET home page
+function getHomePage(req, res) {
+  // If user is logged in, redirect to uploader
+  if (req.isAuthenticated()) {
+    return res.redirect("/uploader");
+  }
+
+  res.render("index", {
+    title: "Shmoogle Drive",
+    user: req.user,
+    errors: [],
+  });
+}
+
 module.exports = {
+  getHomePage,
   validateSignup,
   postSignup,
 };

@@ -1,5 +1,21 @@
 const express = require("express");
 const router = express.Router();
+const uploaderController = require("../controllers/uploaderController");
+
+const multer = require("multer");
+
+// Upload file destination (temporarily in /public)
+const upload = multer({ dest: "./public/data/uploads/" });
+// POST upload file
+router.post(
+  "/upload",
+  ensureAuthenticated,
+  upload.single("file"),
+  function (req, res) {
+    console.log("File uploaded:", req.file);
+    res.redirect("/uploader?success=File uploaded successfully");
+  }
+);
 
 // Middleware to ensure user is authenticated
 function ensureAuthenticated(req, res, next) {
@@ -9,13 +25,10 @@ function ensureAuthenticated(req, res, next) {
   res.redirect("/");
 }
 
-// Render uploader
-router.get("/", ensureAuthenticated, (req, res) => {
-  res.render("uploader", {
-    title: "File Uploader",
-    user: req.user,
-  });
-});
+// Routes using controller functions
+router.get("/", ensureAuthenticated, uploaderController.getUploaderPage);
+router.post("/folder", ensureAuthenticated, uploaderController.createFolder);
+router.get("/files", ensureAuthenticated, uploaderController.getUserFiles);
 
 // GET log out
 router.get("/logOut", function (req, res, next) {
