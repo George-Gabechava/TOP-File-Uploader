@@ -28,6 +28,11 @@
         <input type="text" name="createFolderName" id="createFolderName" />
         <button type="submit">Create Folder</button>
       </form>
+
+      <!-- Error Message Display -->
+      <% if (errorMessage) { %>
+      <div class="error-message"><%= errorMessage %></div>
+      <% } %>
     </div>
 
     <div id="displayContainer">
@@ -35,7 +40,9 @@
       <% userFolders.forEach(function(folder) { %>
       <li class="folder">
         <p><%= folder.name %></p>
-        <p><%= folder.createdAt %></p>
+        <div class="folderDetails">
+          <p>Created:<%= new Date(folder.createdAt).toLocaleString() %></p>
+        </div>
       </li>
       <% }); %>
     </div>

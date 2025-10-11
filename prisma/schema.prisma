@@ -50,11 +50,11 @@ model Folder {
 }
 
 model File {
-  id       String @id @default(uuid())
+  id       String  @id @default(uuid())
   fileName String
   mimetype String
   size     Int
-  content  Bytes  // Store actual file content as binary data
+  url      String?
 
   uploadedAt DateTime @default(now())
 

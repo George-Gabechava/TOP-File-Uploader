@@ -12,8 +12,7 @@ router.post(
   ensureAuthenticated,
   upload.single("file"),
   function (req, res) {
-    console.log("File uploaded:", req.file);
-    res.redirect("/uploader?success=File uploaded successfully");
+    res.redirect("/uploader");
   }
 );
 

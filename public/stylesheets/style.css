@@ -10,3 +10,13 @@ input[type="submit"] {
   padding: 5px;
   width: 20vw;
 }
+
+li {
+  list-style-type: none;
+  border: 1px solid;
+  margin: 5px;
+  display: flex;
+  justify-content: space-between;
+  padding-left: 20px;
+  padding-right: 20px;
+}
