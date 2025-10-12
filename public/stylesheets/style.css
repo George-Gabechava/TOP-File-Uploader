@@ -11,6 +11,7 @@ input[type="submit"] {
   width: 20vw;
 }
 
+/* Uploader CSS */
 li {
   list-style-type: none;
   border: 1px solid;
@@ -19,4 +20,16 @@ li {
   justify-content: space-between;
   padding-left: 20px;
   padding-right: 20px;
+}
+
+.folder.open {
+  background-color: lightyellow;
+  border-color: blue;
+}
+
+.folderContent {
+  margin-left: 20px;
+  margin-right: 5px;
+  padding: 10px;
+  border: 1px solid;
 }

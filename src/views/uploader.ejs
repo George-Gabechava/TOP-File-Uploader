@@ -38,16 +38,34 @@
     <div id="displayContainer">
       <!-- Display folders & files -->
       <% userFolders.forEach(function(folder) { %>
-      <li class="folder">
-        <p><%= folder.name %></p>
-        <div class="folderDetails">
-          <p>Created:<%= new Date(folder.createdAt).toLocaleString() %></p>
-        </div>
-      </li>
+      <div>
+        <li
+          class="folder"
+          id="folder<%=folder.id %>"
+          onclick="openFolder('<%= folder.id %>')"
+        >
+          <p><%= folder.name %></p>
+          <div class="folderDetails">
+            <p>Created:<%= new Date(folder.createdAt).toLocaleString() %></p>
+          </div>
+        </li>
+      </div>
+
+      <!-- Folder content -->
+      <div
+        class="folderContent"
+        id="content<%=folder.id %>"
+        style="display: none"
+      >
+        <p>Files in this folder will appear here...</p>
+        <!-- Future: Files and subfolders will be loaded here -->
+      </div>
       <% }); %>
     </div>
 
     <!-- Footer -->
     <%- include('footer'); %>
+
+    <script src="/scripts/uploaderScripts.js"></script>
   </body>
 </html>
