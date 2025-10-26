@@ -28,6 +28,11 @@ function ensureAuthenticated(req, res, next) {
 router.get("/", ensureAuthenticated, uploaderController.getUploaderPage);
 router.post("/folder", ensureAuthenticated, uploaderController.createFolder);
 router.get("/files", ensureAuthenticated, uploaderController.getUserFiles);
+router.post(
+  "/folder/:id/delete",
+  ensureAuthenticated,
+  uploaderController.deleteFolder
+);
 
 // GET log out
 router.get("/logOut", function (req, res, next) {

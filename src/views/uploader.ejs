@@ -26,6 +26,7 @@
       <!-- Create Folder for uploads -->
       <form id="createFolder" action="/uploader/folder" method="post">
         <input type="text" name="createFolderName" id="createFolderName" />
+        <input type="hidden" name="parentId" id="parentIdField" value="" />
         <button type="submit">Create Folder</button>
       </form>
 
@@ -38,15 +39,26 @@
     <div id="displayContainer">
       <!-- Display folders & files -->
       <% userFolders.forEach(function(folder) { %>
-      <div>
+      <div class="folderContainer">
         <li
           class="folder"
           id="folder<%=folder.id %>"
           onclick="openFolder('<%= folder.id %>')"
         >
-          <p><%= folder.name %></p>
+          <div>
+            <p><%= folder.name %></p>
+            <!-- add edit button/form? for name -->
+          </div>
           <div class="folderDetails">
             <p>Created:<%= new Date(folder.createdAt).toLocaleString() %></p>
+            <form
+              action="/uploader/folder/<%=folder.id %>/delete"
+              method="post"
+            >
+              <button type="submit" id="deleteButton<%=folder.id %>">
+                delete
+              </button>
+            </form>
           </div>
         </li>
       </div>
@@ -57,7 +69,7 @@
         id="content<%=folder.id %>"
         style="display: none"
       >
-        <p>Files in this folder will appear here...</p>
+        <p>Items in this folder will appear here...</p>
         <!-- Future: Files and subfolders will be loaded here -->
       </div>
       <% }); %>

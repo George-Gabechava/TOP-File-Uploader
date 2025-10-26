@@ -40,20 +40,20 @@ async function getUserFiles(req, res) {
 // POST create folder
 async function createFolder(req, res) {
   try {
-    const { createFolderName, description } = req.body;
+    const { createFolderName } = req.body;
     let { parentId } = req.body;
-
+    console.log(createFolderName, parentId);
     // Handle parentId: null for root folders, or valid folder ID
     if (!parentId || parentId === null || parentId.trim() === "") {
-      parentId = null; // Root folder - use null
+      parentId = null;
     }
 
-    // Manual duplicate checking (since PostgreSQL treats NULL != NULL for uniqueness)
+    // duplicate checking
     const existingFolder = await prisma.folder.findFirst({
       where: {
         name: createFolderName,
         ownerId: req.user.id,
-        parentId: parentId, // This will be either null or a valid folder ID
+        parentId: parentId,
       },
     });
 
@@ -67,7 +67,6 @@ async function createFolder(req, res) {
       data: {
         name: createFolderName,
         parentId: parentId,
-        description: description,
         ownerId: req.user.id,
       },
       include: {
@@ -83,6 +82,31 @@ async function createFolder(req, res) {
     res.redirect("/uploader");
   } catch (error) {
     console.error("Error creating folder:", error);
+  }
+}
+
+// POST delete folder
+async function deleteFolder(req, res) {
+  try {
+    const folderId = req.params.id;
+    console.log("delete", folderId);
+
+    const folder = await prisma.folder.delete({
+      where: {
+        id: folderId,
+        ownerId: req.user.id,
+      },
+      include: {
+        children: true,
+        files: true,
+      },
+    });
+
+    // Clear any existing error message on successful creation
+    delete req.session.errorMessage;
+    res.redirect("/uploader");
+  } catch (error) {
+    console.error("Error deleting folder:", error);
   }
 }
 
@@ -106,4 +130,5 @@ module.exports = {
   uploadFile,
   getUserFiles,
   createFolder,
+  deleteFolder,
 };

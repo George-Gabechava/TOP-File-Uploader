@@ -3,8 +3,8 @@
 // folder onClick function
 function openFolder(folderId) {
   console.log("oppening folder", folderId);
-  // store current folderId in window
-  window.history.pushState({ folderId }, "", window.location.pathname);
+  // store current folderId
+  //code
 
   // close all folders
   closeAllFolders();
