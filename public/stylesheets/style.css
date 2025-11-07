@@ -1,6 +1,6 @@
 body {
   padding: 30px;
-  font: 14px "Times New Roman", Times, serif;
+  font: 16px "Times New Roman", Times, serif;
 }
 
 button,
@@ -11,19 +11,14 @@ input[type="submit"] {
 }
 
 /* Uploader CSS */
-li {
-  list-style-type: none;
-  border: 1px solid;
-  margin: 5px;
+.folderBlock {
   display: flex;
-  justify-content: space-between;
   padding-left: 20px;
   padding-right: 20px;
+  justify-content: space-between;
 }
 
-.folder.open {
-  background-color: lightyellow;
-  border-color: blue;
+.folderLink {
 }
 
 .folderContent {

@@ -2,18 +2,26 @@ const express = require("express");
 const router = express.Router();
 const uploaderController = require("../controllers/uploaderController");
 
-const multer = require("multer");
-
 // Upload file destination (temporarily in /public)
+const multer = require("multer");
 const upload = multer({ dest: "./public/data/uploads/" });
+
+// POST upload file (multer)
+// router.post(
+//   "/upload",
+//   ensureAuthenticated,
+//   upload.single("file"),
+//   function (req, res) {
+//     res.redirect("/uploader");
+//   }
+// );
+
 // POST upload file
 router.post(
   "/upload",
   ensureAuthenticated,
   upload.single("file"),
-  function (req, res) {
-    res.redirect("/uploader");
-  }
+  uploaderController.uploadFile
 );
 
 // Middleware to ensure user is authenticated
@@ -24,16 +32,21 @@ function ensureAuthenticated(req, res, next) {
   res.redirect("/");
 }
 
-// Routes using controller functions
+// Render page
 router.get("/", ensureAuthenticated, uploaderController.getUploaderPage);
+router.get(
+  "/folder/:folderId",
+  ensureAuthenticated,
+  uploaderController.renderFolder
+);
+// Create folder (root or child)
 router.post("/folder", ensureAuthenticated, uploaderController.createFolder);
-router.get("/files", ensureAuthenticated, uploaderController.getUserFiles);
+// Delete folder
 router.post(
   "/folder/:id/delete",
   ensureAuthenticated,
   uploaderController.deleteFolder
 );
-
 // GET log out
 router.get("/logOut", function (req, res, next) {
   req.logout(function (err) {
@@ -43,6 +56,5 @@ router.get("/logOut", function (req, res, next) {
     res.redirect("/");
   });
 });
-
 //
 module.exports = router;

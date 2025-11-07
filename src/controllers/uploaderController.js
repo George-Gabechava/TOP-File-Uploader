@@ -5,30 +5,64 @@ const prisma = new PrismaClient();
 async function getUploaderPage(req, res) {
   try {
     // Fetch user's folders from database
-    const userFolders = await prisma.folder.findMany({
-      where: { ownerId: req.user.id },
-      orderBy: { createdAt: "desc" },
+    let root = await prisma.folder.findFirst({
+      where: { ownerId: req.user.id, parentId: null },
+      orderBy: { createdAt: "asc" },
     });
 
-    // Get error message from session
-    const errorMessage = req.session.errorMessage;
-
-    // Clear error message after displaying it.
-    // Timeout to prevent no error message bug.
-    if (errorMessage) {
-      setTimeout(() => {
-        delete req.session.errorMessage;
-      }, 100);
+    if (!root) {
+      root = await prisma.folder.create({
+        data: { name: "Root", parentId: null, ownerId: req.user.id },
+      });
     }
 
-    res.render("uploader", {
-      title: "File Uploader",
+    return res.redirect(`/uploader/folder/${root.id}`);
+  } catch (error) {
+    console.error("getUploaderPage error:", error);
+    return res.status(500).render("error", { message: "Failed to open root." });
+  }
+}
+
+async function renderFolder(req, res) {
+  try {
+    const folder = await prisma.folder.findFirst({
+      where: { id: req.params.folderId, ownerId: req.user.id },
+      include: {
+        parent: true,
+        children: true,
+        files: true,
+      },
+    });
+    const errorMessage = req.session.errorMessage;
+    delete req.session.errorMessage;
+
+    let contents = {
+      ...folder,
+      contentsCreatedAt: folder.createdAt
+        ? folder.createdAt.toLocaleString()
+        : "",
+      children: folder.children.map((child) => ({
+        ...child,
+        contentsCreatedAt: child.createdAt
+          ? folder.createdAt.toLocaleString()
+          : "",
+      })),
+      files: folder.files.map((file) => ({
+        ...file,
+        contentsCreatedAt: file.createdAt
+          ? file.createdAt.toLocaleString()
+          : "",
+        contentsSize: `${file.size} B`,
+      })),
+    };
+    return res.render("uploader", {
+      title: contents.name,
+      folder: contents,
+      errorMessage,
       user: req.user,
-      userFolders: userFolders,
-      errorMessage: errorMessage,
     });
   } catch (error) {
-    console.error("Error fetching folders:", error);
+    console.error("renderFolder error:", error);
   }
 }
 
@@ -40,15 +74,13 @@ async function getUserFiles(req, res) {
 // POST create folder
 async function createFolder(req, res) {
   try {
-    const { createFolderName } = req.body;
-    let { parentId } = req.body;
-    console.log(createFolderName, parentId);
-    // Handle parentId: null for root folders, or valid folder ID
-    if (!parentId || parentId === null || parentId.trim() === "") {
-      parentId = null;
-    }
+    // Match the field name from your form
+    let { createFolderName, parentId } = req.body;
 
-    // duplicate checking
+    console.log("Creating folder:", createFolderName);
+    console.log("Parent ID from form:", parentId);
+
+    // Check for duplicate folder names in the same location
     const existingFolder = await prisma.folder.findFirst({
       where: {
         name: createFolderName,
@@ -58,12 +90,13 @@ async function createFolder(req, res) {
     });
 
     if (existingFolder) {
-      req.session.errorMessage =
-        "A folder with that name already exists in this location";
-      return res.redirect("/uploader");
+      const location = parentId ? "this folder" : "root";
+      req.session.errorMessage = `A folder named "${createFolderName}" already exists in ${location}`;
+      return res.redirect(`/uploader/folder/${parentId}`);
     }
 
-    const folder = await prisma.folder.create({
+    // Create the new folder
+    await prisma.folder.create({
       data: {
         name: createFolderName,
         parentId: parentId,
@@ -77,11 +110,14 @@ async function createFolder(req, res) {
       },
     });
 
-    // Clear any existing error message on successful creation
     delete req.session.errorMessage;
-    res.redirect("/uploader");
+    return res.redirect(
+      parentId ? `/uploader/folder/${parentId}` : "/uploader"
+    );
   } catch (error) {
     console.error("Error creating folder:", error);
+    req.session.errorMessage = "Error creating folder. Please try again.";
+    res.redirect("/uploader");
   }
 }
 
@@ -127,6 +163,7 @@ async function uploadFile(req, res) {
 
 module.exports = {
   getUploaderPage,
+  renderFolder,
   uploadFile,
   getUserFiles,
   createFolder,

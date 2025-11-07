@@ -21,12 +21,23 @@
           <label for="file">Choose file:</label>
           <input type="file" id="file" name="file" required />
         </div>
+        <!-- keep context so controller can redirect back -->
+        <input type="hidden" name="folderId" value="<%= folder.id %>" />
         <button type="submit">Upload File</button>
       </form>
-      <!-- Create Folder for uploads -->
+      <!-- Go up a folder  -->
+      <% if (folder.parentId) { %>
+      <a href="/uploader/folder/<%= folder.parentId %>">Up one level</a>
+      <% } %>
+      <!-- Create Folder -->
       <form id="createFolder" action="/uploader/folder" method="post">
-        <input type="text" name="createFolderName" id="createFolderName" />
-        <input type="hidden" name="parentId" id="parentIdField" value="" />
+        <input
+          type="text"
+          name="createFolderName"
+          placeholder="Folder name"
+          required
+        />
+        <input type="hidden" name="parentId" value="<%= folder.id %>" />
         <button type="submit">Create Folder</button>
       </form>
 
@@ -38,41 +49,42 @@
 
     <div id="displayContainer">
       <!-- Display folders & files -->
-      <% userFolders.forEach(function(folder) { %>
-      <div class="folderContainer">
-        <li
-          class="folder"
-          id="folder<%=folder.id %>"
-          onclick="openFolder('<%= folder.id %>')"
+      <% if (!folder.children || folder.children.length === 0) { %>
+      <p>This folder has no subfolders.</p>
+      <% } else { %> <% folder.children.forEach(child => { %>
+      <div class="folderBlock">
+        <form
+          class="folderNavForm"
+          action="/uploader/folder/<%= child.id %>"
+          method="get"
+          style="display: inline"
         >
-          <div>
-            <p><%= folder.name %></p>
-            <!-- add edit button/form? for name -->
-          </div>
-          <div class="folderDetails">
-            <p>Created:<%= new Date(folder.createdAt).toLocaleString() %></p>
-            <form
-              action="/uploader/folder/<%=folder.id %>/delete"
-              method="post"
-            >
-              <button type="submit" id="deleteButton<%=folder.id %>">
-                delete
-              </button>
-            </form>
-          </div>
-        </li>
+          <button class="folderButton" type="submit">
+            <span class="folderName"><%= child.name %></span>
+          </button>
+        </form>
+        Created: <%= child.contentsCreatedAt %>
+        <form
+          action="/uploader/folder/<%= child.id %>/delete"
+          method="post"
+          style="display: inline"
+        >
+          <button type="submit" onclick="return confirm('Delete this folder?')">
+            delete
+          </button>
+        </form>
       </div>
+      <% }) %> <% } %>
 
-      <!-- Folder content -->
-      <div
-        class="folderContent"
-        id="content<%=folder.id %>"
-        style="display: none"
-      >
-        <p>Items in this folder will appear here...</p>
-        <!-- Future: Files and subfolders will be loaded here -->
+      <h2>Files</h2>
+      <% if (!folder.files || folder.files.length === 0) { %>
+      <p>No files.</p>
+      <% } else { %> <% folder.files.forEach(file => { %>
+      <div class="file-block">
+        <span><%= file.fileName || file.name %></span>
+        <%= file.contentsSize %> • <%= file.contentsCreatedAt %>
       </div>
-      <% }); %>
+      <% }) %> <% } %>
     </div>
 
     <!-- Footer -->
