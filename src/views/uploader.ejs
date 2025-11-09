@@ -27,14 +27,14 @@
       </form>
       <!-- Go up a folder  -->
       <% if (folder.parentId) { %>
-      <a href="/uploader/folder/<%= folder.parentId %>">Up one level</a>
+      <a href="/uploader/folder/<%= folder.parentId %>">&#8617; Go Back</a>
       <% } %>
       <!-- Create Folder -->
       <form id="createFolder" action="/uploader/folder" method="post">
         <input
           type="text"
           name="createFolderName"
-          placeholder="Folder name"
+          placeholder="Folder Name"
           required
         />
         <input type="hidden" name="parentId" value="<%= folder.id %>" />
@@ -53,24 +53,38 @@
       <p>This folder has no subfolders.</p>
       <% } else { %> <% folder.children.forEach(child => { %>
       <div class="folderBlock">
+        <!-- Folder Button -->
         <form
           class="folderNavForm"
           action="/uploader/folder/<%= child.id %>"
           method="get"
-          style="display: inline"
         >
           <button class="folderButton" type="submit">
             <span class="folderName"><%= child.name %></span>
           </button>
         </form>
+        <!-- Details -->
         Created: <%= child.contentsCreatedAt %>
+        <!-- Edit Button -->
         <form
-          action="/uploader/folder/<%= child.id %>/delete"
+          class="editForm"
+          action="/uploader/folder/<%= child.id%>/edit"
           method="post"
-          style="display: inline"
         >
+          <input
+            type="text"
+            name="newName"
+            placeholder="New Folder Name"
+            minlength="1"
+            required
+          />
+          <input type="hidden" name="folderId" value="<%= folder.id %>" />
+          <button type="submit">Edit</button>
+        </form>
+        <!-- Delete Button -->
+        <form action="/uploader/folder/<%= child.id %>/delete" method="post">
           <button type="submit" onclick="return confirm('Delete this folder?')">
-            delete
+            Delete
           </button>
         </form>
       </div>

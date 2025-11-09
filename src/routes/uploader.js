@@ -41,6 +41,13 @@ router.get(
 );
 // Create folder (root or child)
 router.post("/folder", ensureAuthenticated, uploaderController.createFolder);
+// Edit folder
+router.post(
+  "/folder/:id/edit",
+  ensureAuthenticated,
+  uploaderController.editFolder
+);
+
 // Delete folder
 router.post(
   "/folder/:id/delete",

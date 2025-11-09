@@ -44,7 +44,7 @@ async function renderFolder(req, res) {
       children: folder.children.map((child) => ({
         ...child,
         contentsCreatedAt: child.createdAt
-          ? folder.createdAt.toLocaleString()
+          ? child.createdAt.toLocaleString()
           : "",
       })),
       files: folder.files.map((file) => ({
@@ -69,6 +69,31 @@ async function renderFolder(req, res) {
 // GET user's files and folders
 async function getUserFiles(req, res) {
   const userFolders = await prisma.user.findMany();
+  return userFolders;
+}
+
+// Check for duplicate folder names
+async function hasDuplicate(ownerId, parentId, name) {
+  try {
+    // Check for duplicate folder names in the same location
+    const existingFolder = await prisma.folder.findFirst({
+      where: {
+        name: name,
+        ownerId: ownerId,
+        parentId: parentId || null,
+      },
+    });
+
+    if (existingFolder) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    console.error("Error naming folder:", error);
+    req.session.errorMessage = "Error naming folder. Please try again.";
+    res.redirect("/uploader");
+  }
 }
 
 // POST create folder
@@ -76,39 +101,33 @@ async function createFolder(req, res) {
   try {
     // Match the field name from your form
     let { createFolderName, parentId } = req.body;
+    const ownerId = req.user.id;
 
     console.log("Creating folder:", createFolderName);
     console.log("Parent ID from form:", parentId);
 
-    // Check for duplicate folder names in the same location
-    const existingFolder = await prisma.folder.findFirst({
-      where: {
-        name: createFolderName,
-        ownerId: req.user.id,
-        parentId: parentId,
-      },
-    });
-
-    if (existingFolder) {
-      const location = parentId ? "this folder" : "root";
-      req.session.errorMessage = `A folder named "${createFolderName}" already exists in ${location}`;
-      return res.redirect(`/uploader/folder/${parentId}`);
+    // check if folder name already in use
+    let checkResult = await hasDuplicate(
+      ownerId,
+      parentId,
+      createFolderName.trim()
+    );
+    if (checkResult === false) {
+      // Create the new folder
+      await prisma.folder.create({
+        data: {
+          name: createFolderName,
+          parentId: parentId,
+          ownerId: req.user.id,
+        },
+        include: {
+          owner: true,
+          parent: true,
+          children: true,
+          files: true,
+        },
+      });
     }
-
-    // Create the new folder
-    await prisma.folder.create({
-      data: {
-        name: createFolderName,
-        parentId: parentId,
-        ownerId: req.user.id,
-      },
-      include: {
-        owner: true,
-        parent: true,
-        children: true,
-        files: true,
-      },
-    });
 
     delete req.session.errorMessage;
     return res.redirect(
@@ -121,7 +140,45 @@ async function createFolder(req, res) {
   }
 }
 
-// POST delete folder
+// POST edit folder
+async function editFolder(req, res) {
+  console.log(req.body);
+  try {
+    const folderId = req.params.id;
+    const newName = req.body.newName.trim();
+    const ownerId = req.user.id;
+    console.log("edit", folderId);
+
+    const current = await prisma.folder.findFirst({
+      where: {
+        id: folderId,
+        ownerId: req.user.id,
+      },
+      select: { id: true, parentId: true },
+    });
+    const currentParentId = current.parentId;
+    // check if folder name already in use
+    let checkResult = await hasDuplicate(ownerId, currentParentId, newName);
+    if (checkResult === false) {
+      await prisma.folder.update({
+        where: { id: folderId },
+        data: { name: newName },
+      });
+    }
+    if (checkResult === true) {
+    }
+
+    // Clear any existing error message on successful creation
+    delete req.session.errorMessage;
+    return res.redirect(
+      currentParentId ? `/uploader/folder/${currentParentId}` : `/uploader`
+    );
+  } catch (error) {
+    console.error("Error editing folder:", error);
+  }
+}
+
+// POST delete folder and its children
 async function deleteFolder(req, res) {
   try {
     const folderId = req.params.id;
@@ -167,5 +224,6 @@ module.exports = {
   uploadFile,
   getUserFiles,
   createFolder,
+  editFolder,
   deleteFolder,
 };
