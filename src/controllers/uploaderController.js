@@ -1,6 +1,7 @@
 const { PrismaClient } = require("@prisma/client");
 const { check } = require("express-validator");
 const prisma = new PrismaClient();
+// import { createClient } from "@supabase/supabase-js";
 
 // GET uploader page
 async function getUploaderPage(req, res) {
@@ -50,10 +51,10 @@ async function renderFolder(req, res) {
       })),
       files: folder.files.map((file) => ({
         ...file,
-        contentsCreatedAt: file.createdAt
-          ? file.createdAt.toLocaleString()
+        contentsCreatedAt: file.uploadedAt
+          ? file.uploadedAt.toLocaleString()
           : "",
-        contentsSize: `${file.size} B`,
+        contentsSize: `${file.size}B`,
       })),
     };
     return res.render("uploader", {
@@ -65,12 +66,6 @@ async function renderFolder(req, res) {
   } catch (error) {
     console.error("renderFolder error:", error);
   }
-}
-
-// GET user's files and folders
-async function getUserFiles(req, res) {
-  const userFolders = await prisma.user.findMany();
-  return userFolders;
 }
 
 // Check for duplicate folder names
@@ -183,7 +178,7 @@ async function editFolder(req, res) {
       });
     }
 
-    // Clear any existing error message on successful creation
+    // Clear any existing error message
     delete req.session.errorMessage;
     return res.redirect(
       current.parentId ? `/uploader/folder/${current.parentId}` : "/uploader"
@@ -210,7 +205,7 @@ async function deleteFolder(req, res) {
       },
     });
 
-    // Clear any existing error message on successful creation
+    // Clear any existing error message
     delete req.session.errorMessage;
     res.redirect("/uploader");
   } catch (error) {
@@ -221,15 +216,52 @@ async function deleteFolder(req, res) {
 // POST upload file
 async function uploadFile(req, res) {
   try {
-    if (!req.file) {
-      return res.status(400).send("No file uploaded");
-    }
+    const ownerId = req.user.id;
+    const folderId = req.body.folderId.trim();
 
-    console.log("File uploaded:", req.file);
-    res.redirect("/uploader?success=File uploaded successfully");
+    await prisma.file.create({
+      data: {
+        fileName: req.file.originalname,
+        mimetype: req.file.mimetype,
+        size: req.file.size,
+        url: `/data/uploads/${req.file.filename}`,
+        ownerId,
+        folderId,
+      },
+    });
+
+    return res.redirect(`/uploader/folder/${folderId}`);
   } catch (error) {
     console.error("Upload error:", error);
-    res.status(500).send("Error uploading file");
+    req.session.errorMessage = "Error uploading file.";
+    return req.session.save(() => res.redirect("/uploader"));
+  }
+}
+
+async function viewFile(req, res) {
+  try {
+    const file = await prisma.file.findFirst({
+      where: { id: req.params.id, ownerId: req.user.id },
+      include: { Folder: true },
+    });
+
+    const errorMessage = req.session.errorMessage;
+    delete req.session.errorMessage;
+
+    const details = {
+      ...file,
+      formattedUploadedAt: file.uploadedAt.toLocaleString(),
+      formattedSize: `${file.size}B`,
+    };
+    return res.render("file", {
+      title: details.fileName,
+      file: details,
+      folder: file.Folder,
+      errorMessage,
+      user: req.user,
+    });
+  } catch (error) {
+    console.error("file details error:", error);
   }
 }
 
@@ -237,8 +269,8 @@ module.exports = {
   getUploaderPage,
   renderFolder,
   uploadFile,
-  getUserFiles,
   createFolder,
   editFolder,
   deleteFolder,
+  viewFile,
 };

@@ -95,7 +95,11 @@
       <p>No files.</p>
       <% } else { %> <% folder.files.forEach(file => { %>
       <div class="file-block">
-        <span><%= file.fileName || file.name %></span>
+        <span
+          ><a href="/uploader/file/<%= file.id %>"
+            ><%= file.fileName || file.name %></a
+          ></span
+        >
         <%= file.contentsSize %> • <%= file.contentsCreatedAt %>
       </div>
       <% }) %> <% } %>

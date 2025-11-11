@@ -7,22 +7,20 @@ const multer = require("multer");
 const upload = multer({ dest: "./public/data/uploads/" });
 
 // POST upload file (multer)
-// router.post(
-//   "/upload",
-//   ensureAuthenticated,
-//   upload.single("file"),
-//   function (req, res) {
-//     res.redirect("/uploader");
-//   }
-// );
-
-// POST upload file
 router.post(
   "/upload",
   ensureAuthenticated,
   upload.single("file"),
   uploaderController.uploadFile
 );
+
+// POST upload file
+// router.post(
+//   "/upload",
+//   ensureAuthenticated,
+//   upload.single("file"),
+//   uploaderController.uploadFile
+// );
 
 // Middleware to ensure user is authenticated
 function ensureAuthenticated(req, res, next) {
@@ -54,6 +52,7 @@ router.post(
   ensureAuthenticated,
   uploaderController.deleteFolder
 );
+
 // GET log out
 router.get("/logOut", function (req, res, next) {
   req.logout(function (err) {
@@ -63,5 +62,8 @@ router.get("/logOut", function (req, res, next) {
     res.redirect("/");
   });
 });
-//
+
+// GET file details
+router.get("/file/:id", ensureAuthenticated, uploaderController.viewFile);
+
 module.exports = router;

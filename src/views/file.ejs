@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/stylesheets/style.css" />
+  </head>
+  <body>
+    <% if (folder.id) { %>
+    <a href="/uploader/folder/<%= folder.id %>">&#8617; Go Back</a>
+
+    <% } if (errorMessage) { %>
+    <div class="errorMessage"><% errorMessage %></div>
+    <% } %>
+
+    <h1><%= file.fileName %></h1>
+    <li>Type: <%= file.mimetype %></li>
+    <li>Size: <%= file.formattedSize %></li>
+    <li>Uploaded: <%= file.formattedUploadedAt %></li>
+    <!-- Add Download Button -->
+  </body>
+</html>
