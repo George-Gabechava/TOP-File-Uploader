@@ -1,4 +1,5 @@
 const { PrismaClient } = require("@prisma/client");
+const { check } = require("express-validator");
 const prisma = new PrismaClient();
 
 // GET uploader page
@@ -73,26 +74,21 @@ async function getUserFiles(req, res) {
 }
 
 // Check for duplicate folder names
-async function hasDuplicate(ownerId, parentId, name) {
-  try {
-    // Check for duplicate folder names in the same location
-    const existingFolder = await prisma.folder.findFirst({
-      where: {
-        name: name,
-        ownerId: ownerId,
-        parentId: parentId || null,
-      },
-    });
+async function hasDuplicate(ownerId, parentId, name, editId = null) {
+  // Check for duplicate folder names in the same location
+  const existingFolder = await prisma.folder.findFirst({
+    where: {
+      name: name,
+      ownerId: ownerId,
+      parentId: parentId || null,
+      ...(editId && { id: { not: editId } }),
+    },
+  });
 
-    if (existingFolder) {
-      return true;
-    } else {
-      return false;
-    }
-  } catch (error) {
-    console.error("Error naming folder:", error);
-    req.session.errorMessage = "Error naming folder. Please try again.";
-    res.redirect("/uploader");
+  if (existingFolder) {
+    return true;
+  } else {
+    return false;
   }
 }
 
@@ -128,11 +124,16 @@ async function createFolder(req, res) {
         },
       });
     }
+    if (checkResult === true) {
+      req.session.errorMessage = `A folder named "${createFolderName.trim()}" already exists here.`;
+      //
+      return req.session.save(() => {
+        res.redirect(parentId ? `/uploader/folder/${parentId}` : "/uploader");
+      });
+    }
 
     delete req.session.errorMessage;
-    return res.redirect(
-      parentId ? `/uploader/folder/${parentId}` : "/uploader"
-    );
+    return res.redirect(`/uploader/folder/${parentId}`);
   } catch (error) {
     console.error("Error creating folder:", error);
     req.session.errorMessage = "Error creating folder. Please try again.";
@@ -152,13 +153,19 @@ async function editFolder(req, res) {
     const current = await prisma.folder.findFirst({
       where: {
         id: folderId,
-        ownerId: req.user.id,
+        ownerId: ownerId,
       },
-      select: { id: true, parentId: true },
+      select: { id: true, parentId: true, name: true },
     });
     const currentParentId = current.parentId;
     // check if folder name already in use
-    let checkResult = await hasDuplicate(ownerId, currentParentId, newName);
+    let checkResult = await hasDuplicate(
+      ownerId,
+      currentParentId,
+      newName,
+      folderId
+    );
+    console.log(checkResult, currentParentId);
     if (checkResult === false) {
       await prisma.folder.update({
         where: { id: folderId },
@@ -166,12 +173,20 @@ async function editFolder(req, res) {
       });
     }
     if (checkResult === true) {
+      req.session.errorMessage = `Folder "${newName}" already exists here.`;
+      return req.session.save(() => {
+        res.redirect(
+          current.parentId
+            ? `/uploader/folder/${current.parentId}`
+            : "/uploader"
+        );
+      });
     }
 
     // Clear any existing error message on successful creation
     delete req.session.errorMessage;
     return res.redirect(
-      currentParentId ? `/uploader/folder/${currentParentId}` : `/uploader`
+      current.parentId ? `/uploader/folder/${current.parentId}` : "/uploader"
     );
   } catch (error) {
     console.error("Error editing folder:", error);

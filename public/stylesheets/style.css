@@ -23,6 +23,13 @@ input[type="submit"] {
 .folderLink {
 }
 
+.errorMessage {
+  font-size: 1rem;
+  font-weight: bold;
+  padding: 10px;
+  background-color: lightpink;
+}
+
 .folderContent {
   margin-left: 20px;
   margin-right: 5px;
