@@ -2,25 +2,17 @@ const express = require("express");
 const router = express.Router();
 const uploaderController = require("../controllers/uploaderController");
 
-// Upload file destination (temporarily in /public)
+// Multer for files
 const multer = require("multer");
-const upload = multer({ dest: "./public/data/uploads/" });
+const upload = multer({ dest: "/tmp/myUploads" });
 
-// POST upload file (multer)
+// POST upload file
 router.post(
   "/upload",
   ensureAuthenticated,
-  upload.single("file"),
+  upload.single("selectedFile"),
   uploaderController.uploadFile
 );
-
-// POST upload file
-// router.post(
-//   "/upload",
-//   ensureAuthenticated,
-//   upload.single("file"),
-//   uploaderController.uploadFile
-// );
 
 // Middleware to ensure user is authenticated
 function ensureAuthenticated(req, res, next) {
@@ -30,23 +22,23 @@ function ensureAuthenticated(req, res, next) {
   res.redirect("/");
 }
 
-// Render page
+// GET rendered page
 router.get("/", ensureAuthenticated, uploaderController.getUploaderPage);
 router.get(
   "/folder/:folderId",
   ensureAuthenticated,
   uploaderController.renderFolder
 );
-// Create folder (root or child)
+// POST create folder (root or child)
 router.post("/folder", ensureAuthenticated, uploaderController.createFolder);
-// Edit folder
+// POST edit folder
 router.post(
   "/folder/:id/edit",
   ensureAuthenticated,
   uploaderController.editFolder
 );
 
-// Delete folder
+// POST delete folder
 router.post(
   "/folder/:id/delete",
   ensureAuthenticated,

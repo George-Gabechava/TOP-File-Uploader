@@ -1,7 +1,13 @@
 const { PrismaClient } = require("@prisma/client");
 const { check } = require("express-validator");
 const prisma = new PrismaClient();
-// import { createClient } from "@supabase/supabase-js";
+require("dotenv").config();
+// Supabase setup
+const { createClient } = require("@supabase/supabase-js");
+const supabase = createClient(
+  "https://lxdjtdkmbxyoclnlapet.supabase.co",
+  process.env.SUPABASE_KEY
+);
 
 // GET uploader page
 async function getUploaderPage(req, res) {
@@ -138,12 +144,11 @@ async function createFolder(req, res) {
 
 // POST edit folder
 async function editFolder(req, res) {
-  console.log(req.body);
+  console.log("edit body:".req.body);
   try {
     const folderId = req.params.id;
     const newName = req.body.newName.trim();
     const ownerId = req.user.id;
-    console.log("edit", folderId);
 
     const current = await prisma.folder.findFirst({
       where: {
@@ -160,7 +165,6 @@ async function editFolder(req, res) {
       newName,
       folderId
     );
-    console.log(checkResult, currentParentId);
     if (checkResult === false) {
       await prisma.folder.update({
         where: { id: folderId },
@@ -215,26 +219,56 @@ async function deleteFolder(req, res) {
 
 // POST upload file
 async function uploadFile(req, res) {
+  const folderId = req.body.folderId;
+  const filename = req.file.filename;
+  console.log(
+    "upload body:",
+    req.body,
+    "filename",
+    req.file.filename,
+    req.filename,
+    req.file.originalname
+  );
+
+  const { data, error } = await supabase.storage
+    .from("uploads")
+    .upload(`${folderId}/${filename}`, req.file);
+  if (error) {
+    console.error("Upload error:", error);
+    req.session.errorMessage = "Error uploading file.";
+    return req.session.save(() => res.redirect(`/uploader/folder/${folderId}`));
+  } else {
+    // Get Supabase File Private Url
+    const fileUrl =
+      await `https://lxdjtdkmbxyoclnlapet.supabase.co/storage/v1/object/authenticated/uploads/${folderId}/${filename}`;
+    console.log("URL:", fileUrl);
+
+    // Send file details to database
+    createFileProperties(req, res, fileUrl);
+    delete req.session.errorMessage;
+    return res.redirect(`/uploader/folder/${folderId}`);
+  }
+}
+
+async function createFileProperties(req, res, fileUrl) {
   try {
     const ownerId = req.user.id;
     const folderId = req.body.folderId.trim();
+    console.log("owner:", ownerId, "folder:", folderId, "url", fileUrl);
 
     await prisma.file.create({
       data: {
-        fileName: req.file.originalname,
+        fileName: req.file.filename,
         mimetype: req.file.mimetype,
         size: req.file.size,
-        url: `/data/uploads/${req.file.filename}`,
+        url: fileUrl,
         ownerId,
         folderId,
       },
     });
-
-    return res.redirect(`/uploader/folder/${folderId}`);
   } catch (error) {
     console.error("Upload error:", error);
     req.session.errorMessage = "Error uploading file.";
-    return req.session.save(() => res.redirect("/uploader"));
   }
 }
 
@@ -268,9 +302,10 @@ async function viewFile(req, res) {
 module.exports = {
   getUploaderPage,
   renderFolder,
-  uploadFile,
   createFolder,
   editFolder,
   deleteFolder,
+  uploadFile,
+  createFileProperties,
   viewFile,
 };

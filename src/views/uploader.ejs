@@ -13,13 +13,13 @@
       <!-- File Upload -->
       <h2>Upload a File</h2>
       <form
-        action="/uploader/upload"
+        action="/uploader/upload/"
         method="post"
         enctype="multipart/form-data"
       >
         <div class="form-group">
-          <label for="file">Choose file:</label>
-          <input type="file" id="file" name="file" required />
+          <label for="selectedFile">Choose file:</label>
+          <input type="file" id="selectedFile" name="selectedFile" required />
         </div>
         <!-- keep context so controller can redirect back -->
         <input type="hidden" name="folderId" value="<%= folder.id %>" />
