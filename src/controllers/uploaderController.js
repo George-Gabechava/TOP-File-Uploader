@@ -4,9 +4,10 @@ const prisma = new PrismaClient();
 require("dotenv").config();
 // Supabase setup
 const { createClient } = require("@supabase/supabase-js");
+const { redirect } = require("react-router-dom");
 const supabase = createClient(
   "https://lxdjtdkmbxyoclnlapet.supabase.co",
-  process.env.SUPABASE_KEY
+  process.env.SUPABASE_SERVICE_KEY
 );
 
 // GET uploader page
@@ -144,7 +145,7 @@ async function createFolder(req, res) {
 
 // POST edit folder
 async function editFolder(req, res) {
-  console.log("edit body:".req.body);
+  console.log("edit body:", req.body);
   try {
     const folderId = req.params.id;
     const newName = req.body.newName.trim();
@@ -219,49 +220,49 @@ async function deleteFolder(req, res) {
 
 // POST upload file
 async function uploadFile(req, res) {
+  // Send file details to database
+  createFileProperties(req, res);
+
   const folderId = req.body.folderId;
   const filename = req.file.filename;
   console.log(
     "upload body:",
     req.body,
-    "filename",
+    "multer filename",
     req.file.filename,
-    req.filename,
+    "orig. name",
     req.file.originalname
   );
+  console.log("upload", `${folderId}/${filename}`);
+  try {
+    const fs = require("fs");
+    const fileBuffer = fs.readFileSync(req.file.path);
+    const { data, error } = await supabase.storage
+      .from("uploads")
+      .upload(`${folderId}/${filename}`, fileBuffer, {
+        contentType: req.file.mimetype,
+      });
 
-  const { data, error } = await supabase.storage
-    .from("uploads")
-    .upload(`${folderId}/${filename}`, req.file);
-  if (error) {
+    delete req.session.errorMessage;
+    return res.redirect(`/uploader/folder/${folderId}`);
+  } catch (error) {
     console.error("Upload error:", error);
     req.session.errorMessage = "Error uploading file.";
     return req.session.save(() => res.redirect(`/uploader/folder/${folderId}`));
-  } else {
-    // Get Supabase File Private Url
-    const fileUrl =
-      await `https://lxdjtdkmbxyoclnlapet.supabase.co/storage/v1/object/authenticated/uploads/${folderId}/${filename}`;
-    console.log("URL:", fileUrl);
-
-    // Send file details to database
-    createFileProperties(req, res, fileUrl);
-    delete req.session.errorMessage;
-    return res.redirect(`/uploader/folder/${folderId}`);
   }
 }
 
-async function createFileProperties(req, res, fileUrl) {
+async function createFileProperties(req, res) {
   try {
     const ownerId = req.user.id;
-    const folderId = req.body.folderId.trim();
-    console.log("owner:", ownerId, "folder:", folderId, "url", fileUrl);
+    const folderId = req.body.folderId;
 
     await prisma.file.create({
       data: {
         fileName: req.file.filename,
+        originalName: req.file.originalname,
         mimetype: req.file.mimetype,
         size: req.file.size,
-        url: fileUrl,
         ownerId,
         folderId,
       },
@@ -280,7 +281,6 @@ async function viewFile(req, res) {
     });
 
     const errorMessage = req.session.errorMessage;
-    delete req.session.errorMessage;
 
     const details = {
       ...file,
@@ -296,6 +296,47 @@ async function viewFile(req, res) {
     });
   } catch (error) {
     console.error("file details error:", error);
+    return req.session.save(() => res.redirect(`/uploader/folder/${folderId}`));
+  }
+}
+
+async function downloadFile(req, res) {
+  try {
+    const file = await prisma.file.findFirst({
+      where: { id: req.params.id, ownerId: req.user.id },
+      select: {
+        id: true,
+        fileName: true,
+        originalName: true,
+        folderId: true,
+        ownerId: true,
+      },
+    });
+
+    console.log(
+      "about to await supabase storage: ",
+      `${file.folderId}/${file.fileName}`
+    );
+
+    // Can get a shareable link with some alterations (remove download part)
+    const { data, error } = await supabase.storage
+      .from("uploads")
+      .createSignedUrl(`${file.folderId}/${file.fileName}`, 300, {
+        download: file.originalName || file.fileName,
+      });
+
+    if (error || !data) {
+      console.log(error);
+      req.session.errorMessage = "Could not generate signed URL.";
+      return res.redirect(`/uploader/folder/${file.folderId}`);
+    }
+
+    console.log("signed?", data.signedUrl);
+    return res.redirect(data.signedUrl);
+  } catch (error) {
+    console.error("file download error:", error);
+    req.session.errorMessage = "Download failed.";
+    return res.redirect("/uploader");
   }
 }
 
@@ -308,4 +349,5 @@ module.exports = {
   uploadFile,
   createFileProperties,
   viewFile,
+  downloadFile,
 };

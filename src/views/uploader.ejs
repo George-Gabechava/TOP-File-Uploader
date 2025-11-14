@@ -97,12 +97,20 @@
       <div class="file-block">
         <span
           ><a href="/uploader/file/<%= file.id %>"
-            ><%= file.fileName || file.name %></a
+            ><%= file.originalName || file.fileName || file.id %></a
           ></span
         >
-        <%= file.contentsSize %> • <%= file.contentsCreatedAt %>
+        <%= file.contentsSize %> • Uploaded: <%= file.contentsCreatedAt %> •
+        <!-- <a href="  %= file.url %   ">Download</a> -->
+        <form
+          class="downloadForm"
+          action="/uploader/file/<%= file.id %>/download/"
+          method="get"
+        >
+          <button type="submit">Download</button>
+        </form>
       </div>
-      <% }) %> <% } %>
+      <% }) } %>
     </div>
 
     <!-- Footer -->

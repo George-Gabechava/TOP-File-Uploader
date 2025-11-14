@@ -50,11 +50,11 @@ model Folder {
 }
 
 model File {
-  id       String  @id @default(uuid())
-  fileName String
-  mimetype String
-  size     Int
-  url      String?
+  id           String @id @default(uuid())
+  fileName     String
+  originalName String
+  mimetype     String
+  size         Int
 
   uploadedAt DateTime @default(now())
 

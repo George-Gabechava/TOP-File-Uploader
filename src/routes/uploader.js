@@ -58,4 +58,11 @@ router.get("/logOut", function (req, res, next) {
 // GET file details
 router.get("/file/:id", ensureAuthenticated, uploaderController.viewFile);
 
+// GET file download
+router.get(
+  "/file/:id/download/",
+  ensureAuthenticated,
+  uploaderController.downloadFile
+);
+
 module.exports = router;
