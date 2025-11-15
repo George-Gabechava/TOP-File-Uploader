@@ -65,4 +65,11 @@ router.get(
   uploaderController.downloadFile
 );
 
+// GET file shareable link
+router.get(
+  "/file/:id/share/",
+  ensureAuthenticated,
+  uploaderController.shareFile
+);
+
 module.exports = router;

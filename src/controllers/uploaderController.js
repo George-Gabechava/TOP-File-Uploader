@@ -101,9 +101,6 @@ async function createFolder(req, res) {
     let { createFolderName, parentId } = req.body;
     const ownerId = req.user.id;
 
-    console.log("Creating folder:", createFolderName);
-    console.log("Parent ID from form:", parentId);
-
     // check if folder name already in use
     let checkResult = await hasDuplicate(
       ownerId,
@@ -130,7 +127,7 @@ async function createFolder(req, res) {
       req.session.errorMessage = `A folder named "${createFolderName.trim()}" already exists here.`;
       //
       return req.session.save(() => {
-        res.redirect(parentId ? `/uploader/folder/${parentId}` : "/uploader");
+        res.redirect(`/uploader/folder/${parentId}`);
       });
     }
 
@@ -145,12 +142,13 @@ async function createFolder(req, res) {
 
 // POST edit folder
 async function editFolder(req, res) {
-  console.log("edit body:", req.body);
   try {
+    // Get folder details
     const folderId = req.params.id;
     const newName = req.body.newName.trim();
     const ownerId = req.user.id;
 
+    // Find folder
     const current = await prisma.folder.findFirst({
       where: {
         id: folderId,
@@ -159,19 +157,21 @@ async function editFolder(req, res) {
       select: { id: true, parentId: true, name: true },
     });
     const currentParentId = current.parentId;
-    // check if folder name already in use
+    // Check if folder name already in use
     let checkResult = await hasDuplicate(
       ownerId,
       currentParentId,
       newName,
       folderId
     );
+    // Update folder name
     if (checkResult === false) {
       await prisma.folder.update({
         where: { id: folderId },
         data: { name: newName },
       });
     }
+    // Stop if found duplicate name.
     if (checkResult === true) {
       req.session.errorMessage = `Folder "${newName}" already exists here.`;
       return req.session.save(() => {
@@ -197,8 +197,7 @@ async function editFolder(req, res) {
 async function deleteFolder(req, res) {
   try {
     const folderId = req.params.id;
-    console.log("delete", folderId);
-
+    // Delete folder and contents.
     const folder = await prisma.folder.delete({
       where: {
         id: folderId,
@@ -223,26 +222,22 @@ async function uploadFile(req, res) {
   // Send file details to database
   createFileProperties(req, res);
 
+  // Get folder and file name for unique location.
   const folderId = req.body.folderId;
   const filename = req.file.filename;
-  console.log(
-    "upload body:",
-    req.body,
-    "multer filename",
-    req.file.filename,
-    "orig. name",
-    req.file.originalname
-  );
-  console.log("upload", `${folderId}/${filename}`);
+
+  // Get file using fs
   try {
     const fs = require("fs");
     const fileBuffer = fs.readFileSync(req.file.path);
+    // Upload file to Supabase
     const { data, error } = await supabase.storage
       .from("uploads")
       .upload(`${folderId}/${filename}`, fileBuffer, {
         contentType: req.file.mimetype,
       });
 
+    // Reload page
     delete req.session.errorMessage;
     return res.redirect(`/uploader/folder/${folderId}`);
   } catch (error) {
@@ -257,6 +252,7 @@ async function createFileProperties(req, res) {
     const ownerId = req.user.id;
     const folderId = req.body.folderId;
 
+    // Add file properties to database
     await prisma.file.create({
       data: {
         fileName: req.file.filename,
@@ -275,6 +271,7 @@ async function createFileProperties(req, res) {
 
 async function viewFile(req, res) {
   try {
+    // Get file
     const file = await prisma.file.findFirst({
       where: { id: req.params.id, ownerId: req.user.id },
       include: { Folder: true },
@@ -287,6 +284,8 @@ async function viewFile(req, res) {
       formattedUploadedAt: file.uploadedAt.toLocaleString(),
       formattedSize: `${file.size}B`,
     };
+
+    // Render specific details
     return res.render("file", {
       title: details.fileName,
       file: details,
@@ -302,6 +301,42 @@ async function viewFile(req, res) {
 
 async function downloadFile(req, res) {
   try {
+    // Get file details
+    const file = await prisma.file.findFirst({
+      where: { id: req.params.id, ownerId: req.user.id },
+      select: {
+        id: true,
+        fileName: true,
+        originalName: true,
+        folderId: true,
+        ownerId: true,
+      },
+    });
+
+    // Download file via signed url
+    const { data, error } = await supabase.storage
+      .from("uploads")
+      .createSignedUrl(`${file.folderId}/${file.fileName}`, 300, {
+        download: file.originalName || file.fileName,
+      });
+
+    if (error || !data) {
+      console.log(error);
+      req.session.errorMessage = "Could not download file.";
+      return res.redirect(`/uploader/folder/${file.folderId}`);
+    }
+
+    return res.redirect(data.signedUrl);
+  } catch (error) {
+    console.error("file download error:", error);
+    req.session.errorMessage = "Download failed.";
+    return res.redirect("/uploader");
+  }
+}
+
+async function shareFile(req, res) {
+  try {
+    // Get file details
     const file = await prisma.file.findFirst({
       where: { id: req.params.id, ownerId: req.user.id },
       select: {
@@ -318,12 +353,12 @@ async function downloadFile(req, res) {
       `${file.folderId}/${file.fileName}`
     );
 
-    // Can get a shareable link with some alterations (remove download part)
+    // Get url via signed url (86400 seconds = expires after 24 hours).
     const { data, error } = await supabase.storage
       .from("uploads")
-      .createSignedUrl(`${file.folderId}/${file.fileName}`, 300, {
-        download: file.originalName || file.fileName,
-      });
+      .createSignedUrl(`${file.folderId}/${file.fileName}`, 500);
+
+    console.log("shareable?: ", data.signedUrl);
 
     if (error || !data) {
       console.log(error);
@@ -331,8 +366,7 @@ async function downloadFile(req, res) {
       return res.redirect(`/uploader/folder/${file.folderId}`);
     }
 
-    console.log("signed?", data.signedUrl);
-    return res.redirect(data.signedUrl);
+    return res.type("text/plain").send(data.signedUrl);
   } catch (error) {
     console.error("file download error:", error);
     req.session.errorMessage = "Download failed.";
@@ -350,4 +384,5 @@ module.exports = {
   createFileProperties,
   viewFile,
   downloadFile,
+  shareFile,
 };

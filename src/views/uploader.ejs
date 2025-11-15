@@ -64,7 +64,8 @@
           </button>
         </form>
         <!-- Details -->
-        Created: <%= child.contentsCreatedAt %>
+        Created: <%= new Date(child.contentsCreatedAt).toLocaleString(`en-US`,
+        {dateStyle: "medium", timeStyle: "short"}) %>
         <!-- Edit Button -->
         <form
           class="editForm"
@@ -95,13 +96,16 @@
       <p>No files.</p>
       <% } else { %> <% folder.files.forEach(file => { %>
       <div class="file-block">
+        <!-- File Details -->
         <span
           ><a href="/uploader/file/<%= file.id %>"
             ><%= file.originalName || file.fileName || file.id %></a
           ></span
         >
-        <%= file.contentsSize %> • Uploaded: <%= file.contentsCreatedAt %> •
-        <!-- <a href="  %= file.url %   ">Download</a> -->
+        <%= file.contentsSize %> • Uploaded: <%= new
+        Date(file.contentsCreatedAt).toLocaleString(`en-US`, {dateStyle:
+        "medium", timeStyle: "short"}) %>
+        <!-- Download Button -->
         <form
           class="downloadForm"
           action="/uploader/file/<%= file.id %>/download/"
@@ -109,6 +113,16 @@
         >
           <button type="submit">Download</button>
         </form>
+        <!-- Shareable Link Button -->
+        <button
+          class="shareButton"
+          id="shareBtn<%= file.id%>"
+          onclick="insertLink(`<%= file.id %>`)"
+          type="button"
+        >
+          Share
+        </button>
+        <span class="sharedLink" id="shareSpan<%= file.id%>"></span>
       </div>
       <% }) } %>
     </div>

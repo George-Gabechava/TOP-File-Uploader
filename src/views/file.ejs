@@ -15,7 +15,16 @@
     <h1><%= file.originalName %></h1>
     <li>Type: <%= file.mimetype %></li>
     <li>Size: <%= file.formattedSize %></li>
-    <li>Uploaded: <%= file.formattedUploadedAt %></li>
-    <button></button>
+    <li>
+      Uploaded: <%= new Date(file.formattedUploadedAt).toLocaleString(`en-US`,
+      {dateStyle: "full", timeStyle: "long"}) %>
+    </li>
+    <form
+      class="downloadForm"
+      action="/uploader/file/<%= file.id %>/download/"
+      method="get"
+    >
+      <button type="submit">Download</button>
+    </form>
   </body>
 </html>
