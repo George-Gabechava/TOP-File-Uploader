@@ -11,3 +11,10 @@ async function insertLink(id) {
     span.textContent = "Network error";
   }
 }
+
+function showEdit(folderId) {
+  console.log("show edit", folderId);
+  let formInput = document.getElementById(`edit${folderId}`);
+
+  formInput.classList.toggle(`active`);
+}

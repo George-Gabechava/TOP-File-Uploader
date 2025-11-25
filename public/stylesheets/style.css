@@ -7,7 +7,7 @@ button,
 input[type="submit"] {
   font-weight: bold;
   padding: 5px;
-  width: 20vw;
+  max-width: 20vw;
 }
 
 /* Uploader CSS */
@@ -50,4 +50,32 @@ input[type="submit"] {
   gap: 20px;
   margin: 5px;
   align-items: center;
+}
+
+.editForm {
+  display: none;
+  align-items: center;
+}
+
+.editForm.active {
+  display: flex;
+  margin-right: -5vw;
+}
+
+.submitButton {
+  font-weight: bold;
+  padding: 5px;
+  max-width: 20vw;
+}
+
+.iconButton {
+  width: 5vw;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 5px;
+}
+
+.iconButton svg {
 }
