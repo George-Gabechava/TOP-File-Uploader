@@ -6,7 +6,7 @@ async function insertLink(id) {
       headers: { Accept: "text/plain" },
     });
     const url = await link.text();
-    span.innerHTML = `Shareable Link (expires in 24 hours): <a href="${url}">${url}</a>`;
+    span.innerHTML = `Shareable Link (expires after 24 hours): <a href="${url}">${url}</a>`;
   } catch {
     span.textContent = "Network error";
   }

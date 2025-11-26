@@ -97,14 +97,20 @@ passport.deserializeUser(async (id, done) => {
 });
 
 // Login route
-app.post(
-  "/login",
-  passport.authenticate("local", {
-    successRedirect: "/uploader",
-    failureRedirect: "/",
-    failureMessage: true,
-  })
-);
+app.post("/login", (req, res, next) => {
+  passport.authenticate("local", (err, user, info) => {
+    if (err) return next(err);
+    if (!user) {
+      // Put a single error object into the session and redirect
+      req.session.errors = [{ msg: info?.message || "Login failed" }];
+      return req.session.save(() => res.redirect("/"));
+    }
+    req.logIn(user, (err) => {
+      if (err) return next(err);
+      return res.redirect("/uploader");
+    });
+  })(req, res, next);
+});
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

@@ -42,8 +42,12 @@
       </form>
 
       <!-- Error Message Display -->
-      <% if (errorMessage) { %>
-      <div class="errorMessage"><%= errorMessage %></div>
+      <% if (errors && errors.length > 0) { %>
+      <div class="errorMessage">
+        <% errors.forEach(error => { %>
+        <div><%= error.msg %></div>
+        <% }) %>
+      </div>
       <% } %>
     </div>
 

@@ -42,8 +42,8 @@ async function renderFolder(req, res) {
         files: true,
       },
     });
-    const errorMessage = req.session.errorMessage;
-    delete req.session.errorMessage;
+    const errors = req.session.errors || [];
+    req.session.errors = [];
 
     let contents = {
       ...folder,
@@ -67,7 +67,7 @@ async function renderFolder(req, res) {
     return res.render("uploader", {
       title: contents.name,
       folder: contents,
-      errorMessage,
+      errors,
       user: req.user,
     });
   } catch (error) {
@@ -124,18 +124,22 @@ async function createFolder(req, res) {
       });
     }
     if (checkResult === true) {
-      req.session.errorMessage = `A folder named "${createFolderName.trim()}" already exists here.`;
+      req.session.errors = [
+        {
+          msg: `A folder named "${createFolderName.trim()}" already exists here.`,
+        },
+      ];
       //
       return req.session.save(() => {
         res.redirect(`/uploader/folder/${parentId}`);
       });
     }
 
-    delete req.session.errorMessage;
+    req.session.errors = [];
     return res.redirect(`/uploader/folder/${parentId}`);
   } catch (error) {
     console.error("Error creating folder:", error);
-    req.session.errorMessage = "Error creating folder. Please try again.";
+    req.session.errors = "Error creating folder. Please try again.";
     res.redirect("/uploader");
   }
 }
@@ -173,7 +177,9 @@ async function editFolder(req, res) {
     }
     // Stop if found duplicate name.
     if (checkResult === true) {
-      req.session.errorMessage = `Folder "${newName}" already exists here.`;
+      req.session.errors = [
+        { msg: `Folder "${newName}" already exists here.` },
+      ];
       return req.session.save(() => {
         res.redirect(
           current.parentId
@@ -184,12 +190,13 @@ async function editFolder(req, res) {
     }
 
     // Clear any existing error message
-    delete req.session.errorMessage;
+    req.session.errors = [];
     return res.redirect(
       current.parentId ? `/uploader/folder/${current.parentId}` : "/uploader"
     );
   } catch (error) {
-    console.error("Error editing folder:", error);
+    req.session.errors = [{ msg: "Error editing folder." }];
+    return req.session.save(() => res.redirect("/uploader"));
   }
 }
 
@@ -210,10 +217,11 @@ async function deleteFolder(req, res) {
     });
 
     // Clear any existing error message
-    delete req.session.errorMessage;
+    req.session.errors = [];
     res.redirect("/uploader");
   } catch (error) {
-    console.error("Error deleting folder:", error);
+    req.session.errors = [{ msg: "Error deleting folder." }];
+    return req.session.save(() => res.redirect("/uploader"));
   }
 }
 
@@ -238,11 +246,10 @@ async function uploadFile(req, res) {
       });
 
     // Reload page
-    delete req.session.errorMessage;
+    req.session.errors = [];
     return res.redirect(`/uploader/folder/${folderId}`);
   } catch (error) {
-    console.error("Upload error:", error);
-    req.session.errorMessage = "Error uploading file.";
+    req.session.errors = [{ msg: "Error uploading file to storage." }];
     return req.session.save(() => res.redirect(`/uploader/folder/${folderId}`));
   }
 }
@@ -264,8 +271,8 @@ async function createFileProperties(req, res) {
       },
     });
   } catch (error) {
-    console.error("Upload error:", error);
-    req.session.errorMessage = "Error uploading file.";
+    console.error("Creation error:", error);
+    req.session.errors = [{ msg: "Error creating properties." }];
   }
 }
 
@@ -277,7 +284,7 @@ async function viewFile(req, res) {
       include: { Folder: true },
     });
 
-    const errorMessage = req.session.errorMessage;
+    const errors = req.session.errors;
 
     const details = {
       ...file,
@@ -290,11 +297,12 @@ async function viewFile(req, res) {
       title: details.fileName,
       file: details,
       folder: file.Folder,
-      errorMessage,
+      errors,
       user: req.user,
     });
   } catch (error) {
-    console.error("file details error:", error);
+    console.error("file view error:", error);
+    req.session.errors = [{ msg: "Could not view file." }];
     return req.session.save(() => res.redirect(`/uploader/folder/${folderId}`));
   }
 }
@@ -322,14 +330,14 @@ async function downloadFile(req, res) {
 
     if (error || !data) {
       console.log(error);
-      req.session.errorMessage = "Could not download file.";
+      req.session.errors = "Could not download file.";
       return res.redirect(`/uploader/folder/${file.folderId}`);
     }
 
     return res.redirect(data.signedUrl);
   } catch (error) {
     console.error("file download error:", error);
-    req.session.errorMessage = "Download failed.";
+    req.session.errors = [{ msg: "Could not download file." }];
     return res.redirect("/uploader");
   }
 }
@@ -348,28 +356,21 @@ async function shareFile(req, res) {
       },
     });
 
-    console.log(
-      "about to await supabase storage: ",
-      `${file.folderId}/${file.fileName}`
-    );
-
     // Get url via signed url (86400 seconds = expires after 24 hours).
     const { data, error } = await supabase.storage
       .from("uploads")
       .createSignedUrl(`${file.folderId}/${file.fileName}`, 500);
 
-    console.log("shareable?: ", data.signedUrl);
-
     if (error || !data) {
       console.log(error);
-      req.session.errorMessage = "Could not generate signed URL.";
+      req.session.errors = [{ msg: "Could not generate signed URL." }];
       return res.redirect(`/uploader/folder/${file.folderId}`);
     }
 
     return res.type("text/plain").send(data.signedUrl);
   } catch (error) {
-    console.error("file download error:", error);
-    req.session.errorMessage = "Download failed.";
+    console.error("file share error:", error);
+    req.session.errors = [{ msg: "Share failed." }];
     return res.redirect("/uploader");
   }
 }
