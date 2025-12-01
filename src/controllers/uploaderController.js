@@ -289,7 +289,7 @@ async function viewFile(req, res) {
     const details = {
       ...file,
       formattedUploadedAt: file.uploadedAt.toLocaleString(),
-      formattedSize: `${file.size}B`,
+      formattedSize: `${file.size} B`,
     };
 
     // Render specific details

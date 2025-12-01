@@ -4,27 +4,33 @@
     <title><%= title %></title>
     <link rel="stylesheet" href="/stylesheets/style.css" />
   </head>
-  <body>
+  <body id="fileBody">
     <% if (folder.id) { %>
-    <a href="/uploader/folder/<%= folder.id %>">&#8617; Go Back</a>
-
-    <% } if (errorMessage) { %>
-    <div class="errorMessage"><% errorMessage %></div>
+    <a class="backLink" href="/uploader/folder/<%= folder.id %>"
+      >&#8617; Go Back</a
+    >
+    <% } %> <% if (errors && errors.length > 0) { %>
+    <div class="errorMessage">
+      <% errors.forEach(error => { %>
+      <div><%= error.msg %></div>
+      <% }) %>
+    </div>
     <% } %>
 
-    <h1><%= file.originalName %></h1>
-    <li>Type: <%= file.mimetype %></li>
-    <li>Size: <%= file.formattedSize %></li>
+    <h1><b>File: </b><%= file.originalName %></h1>
+    <li><b>Type:</b> <%= file.mimetype %></li>
+    <li><b>Size:</b> <%= file.formattedSize %></li>
     <li>
-      Uploaded: <%= new Date(file.formattedUploadedAt).toLocaleString(`en-US`,
-      {dateStyle: "full", timeStyle: "long"}) %>
+      <b>Uploaded:</b> <%= new
+      Date(file.formattedUploadedAt).toLocaleString(`en-US`, {dateStyle: "full",
+      timeStyle: "long"}) %>
     </li>
-    <form
-      class="downloadForm"
-      action="/uploader/file/<%= file.id %>/download/"
-      method="get"
-    >
-      <button type="submit">Download</button>
+  </br>
+  </br>
+
+    <!-- Download Butotn -->
+    <form action="/uploader/file/<%= file.id %>/download/" method="get">
+      <button class="fileViewDownload" type="submit">Download</button>
     </form>
   </body>
 </html>

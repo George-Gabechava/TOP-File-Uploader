@@ -5,31 +5,41 @@
     <link rel="stylesheet" href="/stylesheets/style.css" />
   </head>
   <body>
-    <!-- Logout Button -->
     <div id="loggedInButtons">
+      <!-- Go up a folder  -->
+      <% if (folder.parentId) { %>
+      <a class="backLink" href="/uploader/folder/<%= folder.parentId %>"
+        >&#8617; Go Back</a
+      >
+      <% } else { %>
+      <!-- Empty div for flex space-between to work on logout button-->
+      <div></div>
+      <% } %>
+
+      <!-- Logout Button -->
       <form id="logOutForm" action="/uploader/logOut" method="get">
         <button type="submit">Log Out</button>
       </form>
-      <!-- File Upload -->
-      <h2>Upload a File</h2>
-      <form
-        action="/uploader/upload/"
-        method="post"
-        enctype="multipart/form-data"
-      >
-        <div class="form-group">
-          <label for="selectedFile">Choose file:</label>
-          <input type="file" id="selectedFile" name="selectedFile" required />
-        </div>
+    </div>
+    <!-- File Upload -->
+    <form
+      action="/uploader/upload/"
+      method="post"
+      enctype="multipart/form-data"
+    >
+      <div class="divFormContainer">
+        <h2>Upload a File:</h2>
+        <label for="selectedFile"></label>
+        <input type="file" id="selectedFile" name="selectedFile" required />
         <!-- keep context so controller can redirect back -->
         <input type="hidden" name="folderId" value="<%= folder.id %>" />
-        <button type="submit">Upload File</button>
-      </form>
-      <!-- Go up a folder  -->
-      <% if (folder.parentId) { %>
-      <a href="/uploader/folder/<%= folder.parentId %>">&#8617; Go Back</a>
-      <% } %>
-      <!-- Create Folder -->
+        <button type="submit">Upload</button>
+      </div>
+    </form>
+
+    <!-- Create Folder -->
+    <div class="divFormContainer">
+      <h2>Create Folder:</h2>
       <form id="createFolder" action="/uploader/folder" method="post">
         <input
           type="text"
@@ -38,39 +48,39 @@
           required
         />
         <input type="hidden" name="parentId" value="<%= folder.id %>" />
-        <button type="submit">Create Folder</button>
+        <button type="submit">Create</button>
       </form>
-
-      <!-- Error Message Display -->
-      <% if (errors && errors.length > 0) { %>
-      <div class="errorMessage">
-        <% errors.forEach(error => { %>
-        <div><%= error.msg %></div>
-        <% }) %>
-      </div>
-      <% } %>
     </div>
 
-    <div id="displayContainer">
-      <!-- Display folders & files -->
-      <% if (!folder.children || folder.children.length === 0) { %>
-      <p>This folder has no subfolders.</p>
-      <% } else { %> <% folder.children.forEach(child => { %>
-      <div class="folderBlock">
-        <!-- Folder Button -->
-        <form
-          class="folderNavForm"
-          action="/uploader/folder/<%= child.id %>"
-          method="get"
-        >
-          <button class="folderButton" type="submit">
-            <span class="folderName"><%= child.name %></span>
-          </button>
-        </form>
-        <!-- Details -->
-        Created: <%= new Date(child.contentsCreatedAt).toLocaleString(`en-US`,
-        {dateStyle: "medium", timeStyle: "short"}) %>
-        <!-- Edit Button -->
+    <!-- Error Message Display -->
+    <% if (errors && errors.length > 0) { %>
+    <div class="errorMessage">
+      <% errors.forEach(error => { %>
+      <div><%= error.msg %></div>
+      <% }) %>
+    </div>
+    <% } %>
+
+    <!-- Display folders & files -->
+    <% if (!folder.children || folder.children.length === 0) { %>
+    <p>This folder has no subfolders.</p>
+    <% } else { %> <% folder.children.forEach(child => { %>
+    <div class="folderBlock">
+      <!-- Folder Button -->
+      <form
+        class="folderNavForm"
+        action="/uploader/folder/<%= child.id %>"
+        method="get"
+      >
+        <button class="folderButton" type="submit">
+          <span class="folderName"><%= child.name %></span>
+        </button>
+      </form>
+      <!-- Details -->
+      Created: <%= new Date(child.contentsCreatedAt).toLocaleString(`en-US`,
+      {dateStyle: "medium", timeStyle: "short"}) %>
+      <!-- Edit Button -->
+      <div id="buttonContainer">
         <form
           class="editForm"
           id="edit<%= child.id %>"
@@ -85,7 +95,7 @@
             required
           />
           <input type="hidden" name="folderId" value="<%= child.id %>" />
-          <button class="submitButton" type="submit">Change Folder Name</button>
+          <button class="submitButton" type="submit">Change Name</button>
         </form>
         <button
           class="iconButton"
@@ -124,20 +134,22 @@
           </button>
         </form>
       </div>
-      <% }) %> <% } %>
+    </div>
+    <% }) %> <% } %>
 
-      <h2>Files</h2>
-      <% if (!folder.files || folder.files.length === 0) { %>
-      <p>No files.</p>
-      <% } else { %> <% folder.files.forEach(file => { %>
-      <div class="file-block">
+    <h2>Files:</h2>
+    <% if (!folder.files || folder.files.length === 0) { %>
+    <p>No files.</p>
+    <% } else { %> <% folder.files.forEach(file => { %>
+    <div class="divFileContainer">
+      <div class="upperFileContainer">
         <!-- File Details -->
         <span
-          ><a href="/uploader/file/<%= file.id %>"
+          ><a class="fileDetailName" href="/uploader/file/<%= file.id %>"
             ><%= file.originalName || file.fileName || file.id %></a
           ></span
         >
-        <%= file.contentsSize %> • Uploaded: <%= new
+        Size: <%= file.contentsSize %> &nbsp; • &nbsp; Uploaded: <%= new
         Date(file.contentsCreatedAt).toLocaleString(`en-US`, {dateStyle:
         "medium", timeStyle: "short"}) %>
         <!-- Download Button -->
@@ -146,8 +158,11 @@
           action="/uploader/file/<%= file.id %>/download/"
           method="get"
         >
-          <button type="submit">Download</button>
+          <button class="fileViewDownload" type="submit">Download</button>
         </form>
+      </div>
+
+      <div>
         <!-- Shareable Link Button -->
         <button
           class="shareButton"
@@ -159,9 +174,8 @@
         </button>
         <span class="sharedLink" id="shareSpan<%= file.id%>"></span>
       </div>
-      <% }) } %>
     </div>
-
+    <% }) } %>
     <!-- Footer -->
     <%- include('footer'); %>
 

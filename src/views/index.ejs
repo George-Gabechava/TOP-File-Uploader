@@ -6,7 +6,6 @@
   </head>
   <body>
     <h1><%= title %></h1>
-    <p>Welcome to <%= title %></p>
 
     <!-- Display errors if any -->
     <% if (typeof errors !== 'undefined' && errors.length > 0) { %>
@@ -21,6 +20,7 @@
     <% if (!user) { %>
     <div id="formsContainer">
       <form id="signupForm" action="/signup" method="post">
+        <h2>New User?</h2>
         <label for="username">Username</label>
         <input type="text" id="usernameSignup" name="usernameSignup" required />
         <label for="password">Password</label>
@@ -40,6 +40,7 @@
         <button type="submit">Sign Up</button>
       </form>
       <form id="loginForm" action="/login" method="post">
+        <h2>Returning User?</h2>
         <label for="username">Username</label>
         <input type="text" id="username" name="username" required />
         <label for="password">Password</label>
@@ -48,6 +49,7 @@
       </form>
     </div>
     <% } %>
+  </br>
     <!-- Footer -->
     <%- include('footer'); %>
   </body>

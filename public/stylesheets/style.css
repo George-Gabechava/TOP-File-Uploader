@@ -1,16 +1,56 @@
 body {
   padding: 30px;
   font: 16px "Times New Roman", Times, serif;
+  background-color: rgb(248, 250, 253);
 }
 
 button,
-input[type="submit"] {
+input[type="submit"],
+input[type="file"] {
   font-weight: bold;
-  padding: 5px;
+  font-size: large;
+  padding: 10px;
   max-width: 20vw;
 }
 
-/* Uploader CSS */
+/* Index Page */
+#formsContainer {
+  display: flex;
+  justify-content: space-around;
+}
+
+#signupForm,
+#loginForm {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  background-color: white;
+  justify-content: center;
+  border: 2px solid black;
+}
+
+/* Uploader Page */
+#loggedInButtons {
+  display: flex;
+  justify-content: space-between;
+}
+
+.divFormContainer {
+  display: flex;
+  justify-content: left;
+  align-items: center;
+  border: 1px solid lightgray;
+  margin-top: 15px;
+  margin-bottom: 15px;
+  padding: 5px;
+  gap: 10px;
+  padding-left: 15px;
+}
+
+#selectedFile::file-selector-button {
+  padding: 10px;
+}
+
 .folderBlock {
   display: flex;
   padding-left: 20px;
@@ -18,9 +58,19 @@ input[type="submit"] {
   justify-content: space-between;
   align-items: center;
   border: solid 1px gray;
+  background-color: white;
 }
 
-.folderLink {
+.folderNavForm {
+  flex: 1 1 auto;
+  max-width: 33vw;
+}
+
+.folderButton {
+  font-size: large;
+  padding: 15px;
+  width: 100%;
+  max-width: 33vw;
 }
 
 .sharedLink a {
@@ -59,7 +109,6 @@ input[type="submit"] {
 
 .editForm.active {
   display: flex;
-  margin-right: -5vw;
 }
 
 .submitButton {
@@ -77,5 +126,91 @@ input[type="submit"] {
   margin: 5px;
 }
 
-.iconButton svg {
+.backLink {
+  font-weight: bold;
+  font-size: x-large;
+  border: solid 1px black;
+  border-radius: 1em;
+  padding: 5px 10px;
+  text-decoration: none;
+  color: rgb(100, 100, 100);
+  background-color: rgb(239, 239, 239);
+}
+
+.backLink:active {
+  background-color: rgb(239, 239, 239);
+  color: rgb(100, 100, 100);
+}
+
+.backLink:hover {
+  color: black;
+  background-color: rgb(200, 200, 200);
+}
+
+#buttonContainer {
+  margin: 0px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.divFileContainer {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid lightgray;
+  margin-top: 15px;
+  margin-bottom: 15px;
+  padding: 10px 20px;
+  gap: 10px;
+  padding-left: 15px;
+  background-color: white;
+}
+.upperFileContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.downloadForm {
+  display: inline-flex;
+}
+
+.fileDetailName {
+  font-size: larger;
+}
+/* File Page CSS */
+#fileBody {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: cornsilk;
+}
+
+#fileBody .backLink {
+  align-self: flex-start;
+}
+
+li {
+  list-style-type: circle;
+  font-size: x-large;
+}
+
+.fileViewDownload {
+  font-size: x-large;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+.fileViewDownload:active {
+  background-color: rgb(239, 239, 239);
+}
+
+.fileViewDownload:hover {
+  background-color: rgb(200, 200, 200);
+  border: 1px solid black;
+}
+
+/* Footer */
+footer {
+  text-align: center;
 }
