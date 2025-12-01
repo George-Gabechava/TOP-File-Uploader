@@ -2,6 +2,7 @@ body {
   padding: 30px;
   font: 16px "Times New Roman", Times, serif;
   background-color: rgb(248, 250, 253);
+  text-align: center;
 }
 
 button,
@@ -19,6 +20,23 @@ input[type="file"] {
   justify-content: space-around;
 }
 
+/* Mobile Screens */
+@media (max-width: 1000px) {
+  #formsContainer {
+    flex-direction: column;
+    gap: 30px;
+  }
+}
+
+#signupContainer,
+#loginContainer {
+  background-color: white;
+  border: 1px solid gray;
+  padding: 50px;
+  padding-top: 25px;
+  border-radius: 50px;
+}
+
 #signupForm,
 #loginForm {
   display: flex;
@@ -26,7 +44,7 @@ input[type="file"] {
   gap: 5px;
   background-color: white;
   justify-content: center;
-  border: 2px solid black;
+  /* border: 1px solid gray; */
 }
 
 /* Uploader Page */
@@ -168,6 +186,12 @@ input[type="file"] {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.lowerFileContainer {
+  display: flex;
+  align-items: center;
+  margin-top: 15px;
 }
 
 .downloadForm {

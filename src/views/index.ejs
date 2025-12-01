@@ -19,34 +19,42 @@
     <!-- If not logged in, show sign up & log in buttons-->
     <% if (!user) { %>
     <div id="formsContainer">
-      <form id="signupForm" action="/signup" method="post">
+        
+      <div id="signupContainer">
         <h2>New User?</h2>
-        <label for="username">Username</label>
-        <input type="text" id="usernameSignup" name="usernameSignup" required />
-        <label for="password">Password</label>
-        <input
-          type="password"
-          id="passwordSignup"
-          name="passwordSignup"
-          required
-        />
-        <label for="confirmPassword">Confirm Password</label>
-        <input
-          type="password"
-          id="confirmPassword"
-          name="confirmPassword"
-          required
-        />
-        <button type="submit">Sign Up</button>
-      </form>
-      <form id="loginForm" action="/login" method="post">
+        </br>
+        <form id="signupForm" action="/signup" method="post">
+          <label for="username">Username</label>
+          <input type="text" id="usernameSignup" name="usernameSignup" required />
+          <label for="password">Password</label>
+          <input
+            type="password"
+            id="passwordSignup"
+            name="passwordSignup"
+            required
+          />
+          <label for="confirmPassword">Confirm Password</label>
+          <input
+            type="password"
+            id="confirmPassword"
+            name="confirmPassword"
+            required
+          />
+          <button type="submit">Sign Up</button>
+        </form>
+      </div>
+
+      <div id="signupContainer">
         <h2>Returning User?</h2>
-        <label for="username">Username</label>
-        <input type="text" id="username" name="username" required />
-        <label for="password">Password</label>
-        <input type="password" id="password" name="password" required />
-        <button type="submit">Log In</button>
-      </form>
+        </br>
+        <form id="loginForm" action="/login" method="post">
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" required />
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" required />
+          <button type="submit">Log In</button>
+        </form>
+      </div>
     </div>
     <% } %>
   </br>
