@@ -11,9 +11,13 @@
       <a class="backLink" href="/uploader/folder/<%= folder.parentId %>"
         >&#8617; Go Back</a
       >
+      <h1>Schmoogle Drive</h1>
+
       <% } else { %>
       <!-- Empty div for flex space-between to work on logout button-->
       <div></div>
+      <h1>Schmoogle Drive</h1>
+
       <% } %>
 
       <!-- Logout Button -->
@@ -164,6 +168,7 @@
 
       <div class="lowerFileContainer">
         <!-- Shareable Link Button -->
+        <span class="sharedLink" id="shareSpan<%= file.id%>"></span>
         <button
           class="shareButton"
           id="shareBtn<%= file.id%>"
@@ -172,7 +177,6 @@
         >
           Share
         </button>
-        <span class="sharedLink" id="shareSpan<%= file.id%>"></span>
       </div>
     </div>
     <% }) } %>

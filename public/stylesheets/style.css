@@ -77,6 +77,7 @@ input[type="file"] {
   align-items: center;
   border: solid 1px gray;
   background-color: white;
+  margin-top: 15px;
 }
 
 .folderNavForm {
@@ -153,6 +154,10 @@ input[type="file"] {
   text-decoration: none;
   color: rgb(100, 100, 100);
   background-color: rgb(239, 239, 239);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .backLink:active {
@@ -191,6 +196,7 @@ input[type="file"] {
 .lowerFileContainer {
   display: flex;
   align-items: center;
+  justify-content: right;
   margin-top: 15px;
 }
 
@@ -237,4 +243,5 @@ li {
 /* Footer */
 footer {
   text-align: center;
+  margin-top: 15px;
 }
