@@ -16,16 +16,27 @@
     </div>
     <% } %>
 
+    <!-- Sign Up Success Message -->
+    <% if (typeof success !== 'undefined' && success.length > 0) { %>
+    <div class="success">
+      <h3><%= success %></h3>
+    </div>
+    <% } %>
+
     <!-- If not logged in, show sign up & log in buttons-->
     <% if (!user) { %>
     <div id="formsContainer">
-        
       <div id="signupContainer">
         <h2>New User?</h2>
-        </br>
+        <br />
         <form id="signupForm" action="/signup" method="post">
           <label for="username">Username</label>
-          <input type="text" id="usernameSignup" name="usernameSignup" required />
+          <input
+            type="text"
+            id="usernameSignup"
+            name="usernameSignup"
+            required
+          />
           <label for="password">Password</label>
           <input
             type="password"
@@ -46,7 +57,7 @@
 
       <div id="signupContainer">
         <h2>Returning User?</h2>
-        </br>
+        <br />
         <form id="loginForm" action="/login" method="post">
           <label for="username">Username</label>
           <input type="text" id="username" name="username" required />
@@ -57,7 +68,7 @@
       </div>
     </div>
     <% } %>
-  </br>
+    <br />
     <!-- Footer -->
     <%- include('footer'); %>
   </body>

@@ -58,7 +58,8 @@ async function postSignup(req, res, next) {
       },
     });
 
-    res.redirect("/");
+    req.session.success = "Sign Up Successful!";
+    return req.session.save(() => res.redirect("/"));
   } catch (error) {
     console.error("Error in sign-up:", error);
     res.render("index", {
@@ -76,10 +77,15 @@ function getHomePage(req, res) {
   }
   const errors = req.session.errors || [];
   req.session.errors = [];
+
+  const success = req.session.success || "";
+  req.session.success = "";
+
   res.render("index", {
     title: "Shmoogle Drive",
     user: req.user,
     errors,
+    success,
   });
 }
 

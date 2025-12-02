@@ -4,11 +4,11 @@ A stripped down version of Google Drive. Users can CRUD (create, read, update, d
 
 The files are securely uploaded to Supabase Storage via signed URLs. The users are temporarily stored via session management. Application site and database is deployed using Railway.
 
+Site Link: https://top-file-uploader-production-b6c8.up.railway.app/
+
 <p align="center">
   <img 
     src="./fileUploader.png" 
     alt="App Screenshot" 
   >
 </p>
-
-Site Link: https://top-file-uploader-production-b6c8.up.railway.app/

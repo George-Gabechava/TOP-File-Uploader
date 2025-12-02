@@ -1,8 +1,9 @@
 body {
-  padding: 30px;
   font: 16px "Times New Roman", Times, serif;
   background-color: rgb(248, 250, 253);
   text-align: center;
+  margin: 0;
+  padding: 35px;
 }
 
 button,
@@ -20,12 +21,24 @@ input[type="file"] {
   justify-content: space-around;
 }
 
+.errors {
+  border: 2px dashed red;
+  margin: 5px 25vw;
+}
+
 /* Mobile Screens */
 @media (max-width: 1000px) {
   #formsContainer {
     flex-direction: column;
     gap: 30px;
+    align-items: center;
   }
+}
+
+#loggedInButtons {
+  margin: -35px -35px 20px -35px;
+  padding: 20px;
+  background-color: rgb(168, 170, 173);
 }
 
 #signupContainer,
@@ -44,7 +57,6 @@ input[type="file"] {
   gap: 5px;
   background-color: white;
   justify-content: center;
-  /* border: 1px solid gray; */
 }
 
 /* Uploader Page */
@@ -65,8 +77,13 @@ input[type="file"] {
   padding-left: 15px;
 }
 
+#selectedFile {
+  margin-left: -10px;
+}
+
 #selectedFile::file-selector-button {
   padding: 10px;
+  margin-right: 10px;
 }
 
 .folderBlock {
