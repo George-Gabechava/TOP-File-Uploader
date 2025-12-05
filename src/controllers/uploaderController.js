@@ -21,7 +21,7 @@ async function getUploaderPage(req, res) {
 
     if (!root) {
       root = await prisma.folder.create({
-        data: { name: "Root", parentId: null, ownerId: req.user.id },
+        data: { name: "Schmoogle Drive", parentId: null, ownerId: req.user.id },
       });
     }
 
@@ -294,7 +294,7 @@ async function viewFile(req, res) {
 
     // Render specific details
     return res.render("file", {
-      title: details.fileName,
+      title: details.originalName,
       file: details,
       folder: file.Folder,
       errors,

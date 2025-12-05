@@ -38,6 +38,7 @@
         <!-- keep context so controller can redirect back -->
         <input type="hidden" name="folderId" value="<%= folder.id %>" />
         <button type="submit">Upload</button>
+        <p>(Max File Size: 30 MB)</p>
       </div>
     </form>
 
@@ -66,6 +67,8 @@
     <% } %>
 
     <!-- Display folders & files -->
+    <h2>Folders:</h2>
+
     <% if (!folder.children || folder.children.length === 0) { %>
     <p>This folder has no subfolders.</p>
     <% } else { %> <% folder.children.forEach(child => { %>

@@ -101,7 +101,6 @@ app.post("/login", (req, res, next) => {
   passport.authenticate("local", (err, user, info) => {
     if (err) return next(err);
     if (!user) {
-      // Put a single error object into the session and redirect
       req.session.errors = [{ msg: info?.message || "Login failed" }];
       return req.session.save(() => res.redirect("/"));
     }
